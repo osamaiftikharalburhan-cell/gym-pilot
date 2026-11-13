@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GymPilot — Gym Management
 
-## Getting Started
+Members, fees, attendance, expenses and WhatsApp messages in one place. Built with Next.js (JavaScript / JSX).
 
-First, run the development server:
-
+## Run it
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+Open http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Demo accounts
+| Role  | Username | Password   | Can do |
+|-------|----------|------------|--------|
+| Owner | `owner`  | `owner123` | Everything: payments, expenses, reports, settings, staff accounts |
+| Staff | `staff`  | `staff123` | Members, take fees, reminders, check-ins (no money totals, no reports) |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
+- **Dashboard**: active members, monthly collection, unpaid fees, today's check-ins, and a 6-month income vs expenses chart
+- **Members**: search and filter (Unpaid / Due soon / Paid / Frozen / Left). Unpaid members get a red mark
+- **Fee received**: records the payment, moves the due date forward, and creates a numbered receipt that you can send on WhatsApp or print
+- **Reminders**: one-click WhatsApp fee reminders, with a log of who was reminded
+- **Attendance**: front-desk check-in, plus a QR code that members scan to check themselves in (`/checkin`). Members with unpaid fees are flagged at the door. A "stopped coming" list comes with a one-click come-back message
+- **Freeze / Left**: pause a membership (the due date moves forward when it's unfrozen) or mark a member as left
+- **Expenses & Reports**: record rent, salaries and bills; see real profit, category breakdowns and trends; download a monthly CSV
+- **Settings**: gym details, plan prices, message templates, staff accounts, passwords, and a demo data reset
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Admissions (Join QR)**: new people scan the Join QR, pick a plan and send a request (`/join`). Staff approve it, take the first fee (plan + admission fee), and the person becomes a member with a receipt
+- **WhatsApp AI bot** (`bot/`): replies to WhatsApp messages using your plans, prices and gym info, knows each member's fee status, sends the Join link to new people, and sends fee reminders automatically every day
 
-## Learn More
+## Data
+- **Locally**, data is saved in `data/db.json`.
+- **Online**, data is saved in **Upstash Redis**. It's used automatically when the `KV_REST_API_URL` / `KV_REST_API_TOKEN` environment variables are set.
 
-To learn more about Next.js, take a look at the following resources:
+Demo data is created automatically on first run. **Settings → Reset demo data** restores it.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy to Vercel (free)
+1. Push this folder to a GitHub repository.
+2. On vercel.com: **Add New → Project** → import the repository → **Deploy**.
+3. In the project: **Storage → Create / Connect → Upstash (Redis)** → connect it to the project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically.
+4. **Settings → Environment Variables** → add `SESSION_SECRET` (any long random text).
+5. **Deployments → Redeploy**. Open the site, log in, then print the QR codes from **Attendance → QR codes**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Times are shown in Pakistan time (`Asia/Karachi`). To change that, set `APP_TIMEZONE`.
 
-## Deploy on Vercel
+**QR posters never expire.** They always point to your main Vercel address, even if you open the site through a deployment link. If you add your own domain later, set `APP_URL` (for example `https://gympilot.pk`) and print the posters again.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## WhatsApp AI bot (runs on the gym PC)
+The bot needs a computer that stays on, so it can't run on Vercel. It uses the same database as the website.
+1. `npm run bot:setup` (first time only)
+2. Copy `bot/.env.example` to `bot/.env` and fill it in:
+   - `GEMINI_API_KEY`: free key from https://aistudio.google.com/apikey. Without it, the bot sends simple fixed replies.
+   - `APP_URL`: your Vercel address, used for the Join link.
+   - `KV_REST_API_URL` / `KV_REST_API_TOKEN`: copy them from Vercel → Storage → Upstash → `.env.local`.
+3. `npm run bot` → scan the QR (it shows in the terminal **and** in the website under **Settings**).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tips:
+- Use a separate gym WhatsApp number, not a personal one.
+- If you reply to someone yourself, the bot stays quiet in that chat for 30 minutes.
+- Turn auto-replies and automatic reminders on or off in **Settings**.
+
+## Before going live with real data
+- Set a strong `SESSION_SECRET`.
+- Change the demo passwords, or delete the demo accounts.
+- Run **Reset demo data** only for demos. It erases everything.

@@ -1,0 +1,20 @@
+{
+  "name": "gympilot-whatsapp-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GymPilot WhatsApp AI bot — runs on the gym computer, shares data with the web app",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google/genai": "^3.3.0",
+    "dotenv": "^18.0.10",
+    "qrcode": "^1.5.4",
+    "whatsapp-web.js": "^1.34.8"
+  }
+}

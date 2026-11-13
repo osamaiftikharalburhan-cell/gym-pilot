@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# GymPilot local database
+/data
+
+# WhatsApp bot
+/bot/node_modules
+/bot/.env
